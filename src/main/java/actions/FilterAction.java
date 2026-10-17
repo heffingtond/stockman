@@ -28,7 +28,6 @@ public class FilterAction extends Action
 			{
 				user.setTickers( tickers );
 	            ArrayList<FilterDisplayBean> returnList = StockManUtilities.displayPriceToTarget( tickers );
-	            System.out.println("New 2 return list size is " + returnList.size());
 	            // Clear display list.
 	            user.getAllFilterDisplay().clear();
 	            ArrayList<String> droppedFromDisplay = new ArrayList<String>();
@@ -37,7 +36,6 @@ public class FilterAction extends Action
 	            {
 	            	boolean displayOnReport = true;
 	    			String estimatedIncreaseEpsStr = request.getParameter( "estimatedIncreaseEps" );
-	                System.out.println( "estimatedIncreaseEpsStr is " + estimatedIncreaseEpsStr );
 	    			if ( "true".equalsIgnoreCase( estimatedIncreaseEpsStr ) )
 	    				user.setEstimatedIncreaseEpsSelected( true );
 	    			else
@@ -68,7 +66,6 @@ public class FilterAction extends Action
 	                    	double lastEstimated = Double.parseDouble( lastEpsEst );
 	                    	if ( lastEstimated < lastActual )
 	                    	{
-	                        	System.out.println( "EPS decrease anticipated.  Drop from display. " + display.getSymbol() );
 	                        	droppedFromDisplay.add( "EPS decrease anticipated.  Drop from display. " + display.getSymbol() );
 	                    		displayOnReport = false;
 	                    	}
@@ -79,7 +76,6 @@ public class FilterAction extends Action
 	            	display.setUpside( upside );
 	
 	    			String upside20PercentStr = request.getParameter( "upside20Percent" );
-	                System.out.println( "upside20PercentStr is " + upside20PercentStr );
 	    			if ( "true".equalsIgnoreCase( upside20PercentStr ) )
 	    				user.setUpside20Percent( true );
 	    			else
@@ -101,14 +97,12 @@ public class FilterAction extends Action
 	                		}
 	                		if ( upsideDouble < 20 )
 	                		{
-	                        	System.out.println( "Projected upside less than 20%.  Drop from display. " + display.getSymbol() );
 	                        	droppedFromDisplay.add( "Projected upside less than 20%.  Drop from display. " + display.getSymbol() );
 	                			displayOnReport = false;
 	                		}
 	                	}
 	                
 	    			String ratingBMinusOrBetterStr = request.getParameter( "ratingBMinusOrBetter" );
-	                System.out.println( "ratingBMinusOrBetterStr is " + ratingBMinusOrBetterStr );
 	    			if ( "true".equalsIgnoreCase( ratingBMinusOrBetterStr ) )
 	    				user.setRatingBMinusOrBetter( true );
 	    			else
@@ -133,7 +127,6 @@ public class FilterAction extends Action
 	                		
 	                		if ( ! ACCEPTABLE_RANGE.contains( overallRating ) )
 	                		{
-	                        	System.out.println( "Rating lower than B-.  Drop from display. " + display.getSymbol() );
 	                        	droppedFromDisplay.add( "Rating lower than B-.  Drop from display. " + display.getSymbol() );
 	                			displayOnReport = false;
 	                		}
@@ -142,7 +135,6 @@ public class FilterAction extends Action
 	                if ( displayOnReport )
 	                	user.getAllFilterDisplay().add( display );
 	            }
-	            System.out.println("user.getAllFilterDisplay() size is " + user.getAllFilterDisplay().size());
 	            if ( returnList.size() == 0 )
 	            	request.setAttribute( "userMessage", "None Found" );
 	            else

@@ -894,7 +894,8 @@ public class StockManUtilities
 				else
 				{
 					double priceDouble = ( double ) jsonObject.get( "altmanZScore" );
-					financialScores.setAltmanZScore( Double.toString( priceDouble ) );
+					long rounded = Math.round( priceDouble );
+					financialScores.setAltmanZScore( Long.toString( rounded ) );
 				}
 
 				numberObj = jsonObject.get("piotroskiScore");
@@ -1584,6 +1585,7 @@ public class StockManUtilities
 		
 		double current = 0;
 		double target = 0;
+		long rounded = 0;
 		try
 		{
 			current = Double.parseDouble( currentPrice );
@@ -1609,7 +1611,9 @@ public class StockManUtilities
 		
 		y = y * 100; // convert to percentage
 		
-		upside = Double.toString( y );
+		rounded = Math.round( y );
+		
+		upside = Long.toString( rounded );
 		
 		return upside;
 	}

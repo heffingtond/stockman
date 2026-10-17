@@ -26,7 +26,7 @@ public class LoginAction extends Action
 				System.out.println( "Session was dead.  Getting a new one." );
 				session = request.getSession();
 			}
-	//		session.setMaxInactiveInterval( 120 ); // 120 seconds = 2 minutes (used when testing) 
+	//		session.setMaxInactiveInterval( 30 ); // 30 seconds (used when testing) 
 			session.setMaxInactiveInterval( 3600 ); // 1 hour
 			String username = request.getParameter( "username" );
 			String password = request.getParameter( "password" );
