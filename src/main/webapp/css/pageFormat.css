@@ -46,7 +46,16 @@ h2
 
 p
 {
-  padding-top: 20px;
+	padding-top: 20px;
+}
+
+#description
+{
+	border: 2px solid #000000; 
+	margin-top: 50px;
+	margin-right: 250px;
+	margin-left: 250px;
+	margin-bottom: 50px;
 }
 
 table, th, td {

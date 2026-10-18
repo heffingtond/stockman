@@ -23,6 +23,7 @@ import beans.EarningsBean;
 import beans.FilterDisplayBean;
 import beans.FinancialScoresBean;
 import beans.MarketOpenBean;
+import beans.ProfileBean;
 import beans.QuoteAfterHoursBean;
 import beans.QuoteShortBean;
 import beans.RatingsSnapshotBean;
@@ -1061,6 +1062,63 @@ public class StockManUtilities
         }
 		return returnList;
 	}
+	
+	public static String getProfile( String ticker )
+	{
+		// Return JSON representation of the ticker profile.
+		String returnList = null;
+        try 
+        {
+            // 1. Define the URL of the REST endpoint
+        	String endpointUrl = "https://financialmodelingprep.com/stable/profile";
+        	System.out.println( "endpoint: " + endpointUrl );
+        	endpointUrl += "?apikey=" + System.getenv("FMP_API_KEY");
+        	endpointUrl += "&symbol=" + ticker;
+            @SuppressWarnings("deprecation")
+			URL url = new URL( endpointUrl );
+
+            // 2. Open a connection
+            HttpURLConnection connection = ( HttpURLConnection ) url.openConnection();
+
+            // 3. Set the request method (e.g., GET, POST, PUT, DELETE)
+            connection.setRequestMethod( "GET" );
+
+            // 4. Set request headers (optional, but often necessary for content type, authorization, etc.)
+            connection.setRequestProperty("Accept", "application/json");
+
+            // 5. Get the response code
+            int responseCode = connection.getResponseCode();
+            System.out.println("Response Code: " + responseCode);
+
+            // 6. Read the response
+            if ( responseCode == HttpURLConnection.HTTP_OK ) 
+            {
+                BufferedReader in = new BufferedReader( new InputStreamReader( connection.getInputStream() ) );
+                String inputLine;
+                StringBuilder content = new StringBuilder();
+                while ( ( inputLine = in.readLine() ) != null ) 
+                {
+                    content.append( inputLine );
+                }
+                in.close();
+                returnList = content.toString();
+//                System.out.println( "Response Body: " + content.toString() );
+            } 
+            else 
+            {
+                System.out.println( "Error in GET request: " + responseCode );
+            }
+
+            // 7. Disconnect the connection
+            connection.disconnect();
+
+        } 
+        catch (IOException e) 
+        {
+            e.printStackTrace();
+        }
+		return returnList;
+	}
 
 	private static ArrayList<EarningsBean> loadEarnings( String symbol )
 	{
@@ -1155,6 +1213,163 @@ public class StockManUtilities
 		
 		return allEarnings;
 	}
+
+
+	public static ProfileBean loadProfile( String symbol )
+	{
+		
+		String profileJson = getProfile( symbol );
+		
+		ProfileBean profile = null;
+		
+		JSONParser parser = new JSONParser();
+		try
+		{
+			JSONArray jsonArray = ( JSONArray ) parser.parse( profileJson );
+			for ( Object obj : jsonArray ) 
+			{
+				profile = new ProfileBean();
+				Object numberObj = null;
+				
+				JSONObject jsonObject = ( JSONObject ) obj; // Each element is a JSONObject
+				profile.setSymbol( ( String ) jsonObject.get( "symbol" ) );
+
+				numberObj = jsonObject.get("price");
+				if ( numberObj != null )
+				{
+					if ( numberObj instanceof Long )
+					{
+						long numberLong = ( long ) jsonObject.get( "price"  );
+						profile.setPrice( Long.toString( numberLong ) );
+					}
+					else
+					{
+						double numberDouble = ( double ) jsonObject.get( "price" );
+						profile.setPrice( Double.toString( numberDouble ) );
+					}
+				}
+				numberObj = jsonObject.get("marketCap");
+				if ( numberObj != null )
+				{
+					if ( numberObj instanceof Long )
+					{
+						long numberLong = ( long ) jsonObject.get( "marketCap"  );
+						profile.setMarketCap( Long.toString( numberLong ) );
+					}
+					else
+					{
+						double numberDouble = ( double ) jsonObject.get( "marketCap" );
+						profile.setMarketCap( Double.toString( numberDouble ) );
+					}
+				}
+				numberObj = jsonObject.get("beta");
+				if ( numberObj != null )
+				{
+					if ( numberObj instanceof Long )
+					{
+						long numberLong = ( long ) jsonObject.get( "beta"  );
+						profile.setBeta( Long.toString( numberLong ) );
+					}
+					else
+					{
+						double numberDouble = ( double ) jsonObject.get( "beta" );
+						profile.setBeta( Double.toString( numberDouble ) );
+					}
+				}
+				numberObj = jsonObject.get("lastDividend");
+				if ( numberObj != null )
+				{
+					if ( numberObj instanceof Long )
+					{
+						long numberLong = ( long ) jsonObject.get( "lastDividend"  );
+						profile.setLastDividend( Long.toString( numberLong ) );
+					}
+					else
+					{
+						double numberDouble = ( double ) jsonObject.get( "lastDividend" );
+						profile.setLastDividend( Double.toString( numberDouble ) );
+					}
+				}
+				
+				profile.setRange( ( String ) jsonObject.get( "range" ) );
+				
+				numberObj = jsonObject.get("change");
+				if ( numberObj != null )
+				{
+					if ( numberObj instanceof Long )
+					{
+						long numberLong = ( long ) jsonObject.get( "change"  );
+						profile.setChange( Long.toString( numberLong ) );
+					}
+					else
+					{
+						double numberDouble = ( double ) jsonObject.get( "change" );
+						profile.setChange( Double.toString( numberDouble ) );
+					}
+				}
+				numberObj = jsonObject.get("changePercentage");
+				if ( numberObj != null )
+				{
+					if ( numberObj instanceof Long )
+					{
+						long numberLong = ( long ) jsonObject.get( "changePercentage"  );
+						profile.setChangePercentage( Long.toString( numberLong ) );
+					}
+					else
+					{
+						double numberDouble = ( double ) jsonObject.get( "changePercentage" );
+						profile.setChangePercentage( Double.toString( numberDouble ) );
+					}
+				}
+				numberObj = jsonObject.get("averageVolume");
+				if ( numberObj != null )
+				{
+					if ( numberObj instanceof Long )
+					{
+						long numberLong = ( long ) jsonObject.get( "averageVolume"  );
+						profile.setAverageVolume( Long.toString( numberLong ) );
+					}
+					else
+					{
+						double numberDouble = ( double ) jsonObject.get( "averageVolume" );
+						profile.setAverageVolume( Double.toString( numberDouble ) );
+					}
+				}
+				profile.setCompanyName( ( String ) jsonObject.get( "companyName" ) );
+				profile.setCurrency( ( String ) jsonObject.get( "currency" ) );
+				profile.setCik( ( String ) jsonObject.get( "cik" ) );
+				profile.setIsin( ( String ) jsonObject.get( "isin" ) );
+				profile.setCusip( ( String ) jsonObject.get( "cusip" ) );
+				profile.setExchangeFullName( ( String ) jsonObject.get( "exchangeFullName" ) );
+				profile.setExchange( ( String ) jsonObject.get( "exchange" ) );
+				profile.setIndustry( ( String ) jsonObject.get( "industry" ) );
+				profile.setWebsite( ( String ) jsonObject.get( "website" ) );
+				profile.setDescription( ( String ) jsonObject.get( "description" ) );
+				profile.setCeo( ( String ) jsonObject.get( "ceo" ) );
+				profile.setSector( ( String ) jsonObject.get( "sector" ) );
+				profile.setCountry( ( String ) jsonObject.get( "country" ) );
+				profile.setFullTimeEmployees( ( String ) jsonObject.get( "fullTimeEmployees" ) );
+				profile.setPhone( ( String ) jsonObject.get( "phone" ) );
+				profile.setAddress( ( String ) jsonObject.get( "address" ) );
+				profile.setCity( ( String ) jsonObject.get( "city" ) );
+				profile.setState( ( String ) jsonObject.get( "state" ) );
+				profile.setZip( ( String ) jsonObject.get( "zip" ) );
+				profile.setImage( ( String ) jsonObject.get( "image" ) );
+				profile.setIpoDate( ( String ) jsonObject.get( "ipoDate" ) );
+				profile.setDefaultImage( ( boolean ) jsonObject.get( "defaultImage" ) );
+				profile.setEtf( ( boolean ) jsonObject.get( "isEtf" ) );
+				profile.setAdr( ( boolean ) jsonObject.get( "isAdr" ) );
+				profile.setFund( ( boolean ) jsonObject.get( "isFund" ) );
+			}
+		}
+		catch( Exception e )
+		{
+			e.printStackTrace();
+		}
+		
+		return profile;
+	}
+
 
 	public static String getRatingsSnapshot( String ticker )
 	{

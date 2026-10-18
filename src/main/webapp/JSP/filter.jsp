@@ -101,7 +101,7 @@
 					<c:forEach var="filter" items="${sessionScope.UserBean.allFilterDisplay}">
 						<tr>
 							<td style="width:10%;background-color:#edede6;font-weight: bold;">
-								${filter.symbol}
+								<a href="?ProfileAction=${filter.symbol}" target="_blank">${filter.symbol}</a>
 							</td>
 							<td style="width:10%;background-color:#edede6;font-weight: bold;">
 								${filter.rating}
@@ -113,7 +113,7 @@
 								${myfn:formatToDollar(filter.targetConsensus)}
 							</td>
 							<td style="width:10%;text-align: right;background-color:#edede6;font-weight: bold;">
-								%${filter.upside}
+								${filter.upside}%
 							</td>
 							<td style="width:10%;text-align: right;background-color:#edede6;font-weight: bold;">
 								${filter.volume}

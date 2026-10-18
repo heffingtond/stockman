@@ -6,6 +6,7 @@ import actions.Action;
 import actions.FilterAction;
 import actions.LoginAction;
 import actions.LogoutAction;
+import actions.ProfileAction;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -46,6 +47,9 @@ public class StockManServlet extends HttpServlet
 			else
 			if ( StockManUtilities.replaceSpecialCharacters( request.getParameter( "FilterAction" ) ) != null )
 				action = new FilterAction();
+			else
+			if ( StockManUtilities.replaceSpecialCharacters( request.getParameter( "ProfileAction" ) ) != null )
+				action = new ProfileAction();
 			
 			if ( action != null )
 				action.execute( request, response );
