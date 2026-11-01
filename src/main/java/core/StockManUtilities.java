@@ -13,6 +13,10 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -154,7 +158,10 @@ public class StockManUtilities
         try 
         {
             // 1. Define the URL of the REST endpoint
-        	String endpointUrl = "http://localhost/securityservices/rest/security/authentication";
+        	Context ctx = new InitialContext();
+        	String domainName = ( String ) ctx.lookup("java:global/restServiceDomain");
+        	
+        	String endpointUrl = domainName + "/securityservices/rest/security/authentication";
         	System.out.println( "SecurityUtilities: endpoint: " + endpointUrl );
             @SuppressWarnings("deprecation")
 			URL url = new URL( endpointUrl );
@@ -205,6 +212,10 @@ public class StockManUtilities
         {
             e.printStackTrace();
         }
+        catch (NamingException e) 
+        {
+            e.printStackTrace();
+        }
 		return returnList;
 	}
 
@@ -219,7 +230,10 @@ public class StockManUtilities
         try 
         {
             // 1. Define the URL of the REST endpoint
-        	String endpointUrl = "http://localhost/securityservices/rest/security/requestNewCode";
+        	Context ctx = new InitialContext();
+        	String domainName = ( String ) ctx.lookup("java:global/restServiceDomain");
+        	
+        	String endpointUrl = domainName + "/securityservices/rest/security/requestNewCode";
         	System.out.println( "SecurityUtilities: endpoint: " + endpointUrl );
             @SuppressWarnings("deprecation")
 			URL url = new URL( endpointUrl );
@@ -279,6 +293,10 @@ public class StockManUtilities
         {
             e.printStackTrace();
         }
+        catch (NamingException e) 
+        {
+            e.printStackTrace();
+        }
 		return returnList;
 	}
 
@@ -289,7 +307,10 @@ public class StockManUtilities
         try 
         {
             // 1. Define the URL of the REST endpoint
-        	String endpointUrl = "http://localhost/securityservices/rest/security/roles";
+        	Context ctx = new InitialContext();
+        	String domainName = ( String ) ctx.lookup("java:global/restServiceDomain");
+
+        	String endpointUrl = domainName + "/securityservices/rest/security/roles";
         	System.out.println( "endpoint: " + endpointUrl );
             @SuppressWarnings("deprecation")
 			URL url = new URL( endpointUrl );
@@ -341,6 +362,10 @@ public class StockManUtilities
         {
             e.printStackTrace();
         }
+        catch (NamingException e) 
+        {
+            e.printStackTrace();
+        }
 		return returnList;
 	}
 
@@ -351,7 +376,9 @@ public class StockManUtilities
         try 
         {
             // 1. Define the URL of the REST endpoint
-        	String endpointUrl = "http://localhost/securityservices/rest/security/validate";
+        	Context ctx = new InitialContext();
+        	String domainName = ( String ) ctx.lookup("java:global/restServiceDomain");
+        	String endpointUrl = domainName + "/securityservices/rest/security/validate";
         	System.out.println( "endpoint: " + endpointUrl );
             @SuppressWarnings("deprecation")
 			URL url = new URL( endpointUrl );
@@ -399,6 +426,10 @@ public class StockManUtilities
 
         } 
         catch (IOException e) 
+        {
+            e.printStackTrace();
+        }
+        catch (NamingException e) 
         {
             e.printStackTrace();
         }
@@ -591,6 +622,7 @@ public class StockManUtilities
         	System.out.println( "endpoint: " + endpointUrl );
         	endpointUrl += "?apikey=" + System.getenv("FMP_API_KEY");
         	endpointUrl += "&exchange=" + exchange;
+        	
             @SuppressWarnings("deprecation")
 			URL url = new URL( endpointUrl );
 
