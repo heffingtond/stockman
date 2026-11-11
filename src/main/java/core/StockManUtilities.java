@@ -42,6 +42,7 @@ import jakarta.mail.internet.AddressException;
 
 public class StockManUtilities
 {
+/**
 	public static boolean isTimeout( HttpServletRequest request,
 			 						 HttpServletResponse response ) throws Exception
 	{
@@ -65,7 +66,7 @@ public class StockManUtilities
 		}
 		return isTimeout;
 	}
-	
+**/	
 	public static String replaceSpecialCharacters( String inString )
 	{
 		final String SINGLE_QUOTE = "&#39;";

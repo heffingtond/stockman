@@ -16,7 +16,16 @@ public abstract class Action
 		HttpSession session = request.getSession();
 		if ( session.isNew() )
 		{
-			this.view( request, response, "../JSP/login.jsp" );
+			try
+			{
+				System.out.println( "ACTION: redirect to " + request.getContextPath() + "/JSP/login.jsp" );
+				response.sendRedirect( request.getContextPath() + "/JSP/login.jsp" );
+			}
+			catch( Exception e )
+			{
+				System.out.println( "Failed to redirect on timeout." );
+				e.printStackTrace();
+			}
 			return true;
 		}
 		else

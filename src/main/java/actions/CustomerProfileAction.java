@@ -26,6 +26,7 @@ public class CustomerProfileAction extends Action
 		boolean isFraudulentRequest = false;
 		if ( "initialHit".equalsIgnoreCase( buttonPressed ) )
 		{
+            System.out.println( "CustomerProfileAction.initialHit" );
 			isFraudulentRequest = false;
 		      // 1. Check Honeypot Field
 	        String honeypot = request.getParameter("website_confirm");
@@ -33,7 +34,7 @@ public class CustomerProfileAction extends Action
 	        {
 	            // It's a bot! Silently drop or reject the request
 	            response.setStatus( HttpServletResponse.SC_BAD_REQUEST );
-	            System.out.println( "CustomerProfileAction.initialHit - Suspicious activity detected" );
+	            System.out.println( "CustomerProfileAction.initialHit - Suspicious activity detected in honey pot" );
 	            isFraudulentRequest = true;
 	        }
 
@@ -42,7 +43,7 @@ public class CustomerProfileAction extends Action
 	        if (userAgent == null || userAgent.isEmpty() || StockManUtilities.isKnownBadBot( userAgent ) ) 
 	        {
 	            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-	            System.out.println( "CustomerProfileAction.initialHit - robot detected" );
+	            System.out.println( "CustomerProfileAction.initialHit - user agent robot detected" );
 	            isFraudulentRequest = true;
 	        }
 			
@@ -52,7 +53,7 @@ public class CustomerProfileAction extends Action
 				request.getSession().setAttribute( "NEW_CUSTOMER_PROFILE", newCustomerProfile );
 				SecureRandom secureRand = new SecureRandom();
 				int secureInt = secureRand.nextInt(1000000);
-		        System.out.println("************* new key " + secureInt );
+		        System.out.println("CustomerProfileAction.initialHit - Generating new customer key." );
 				request.getSession().setAttribute( "NEW_CUSTOMER_KEY", secureInt );
 				ArrayList<String> errors = new ArrayList<String>();
 				request.getSession().setAttribute( "NEW_CUSTOMER_ERRORS", errors );
@@ -79,6 +80,7 @@ public class CustomerProfileAction extends Action
 		else
 		if ( "addCustomerProfile".equalsIgnoreCase( buttonPressed ) )
 		{
+            System.out.println( "CustomerProfileAction.addCustomerProfile" );
 			isFraudulentRequest = false;
 			if ( ! this.isTimeout( request, response ) )
 			{
@@ -87,8 +89,6 @@ public class CustomerProfileAction extends Action
 				if ( ! StockManUtilities.isEmpty( requestKeyStr ) )
 					requestKey = Integer.parseInt( requestKeyStr );
 				int sessionKey = ( int ) request.getSession().getAttribute( "NEW_CUSTOMER_KEY" );
-				System.out.println("requestKey is " + requestKey);
-				System.out.println("sessionKey is " + sessionKey);
 				if ( requestKey != sessionKey )
 				{
 		            response.setStatus( HttpServletResponse.SC_BAD_REQUEST );
@@ -102,7 +102,7 @@ public class CustomerProfileAction extends Action
 		        {
 		            // It's a bot! Silently drop or reject the request
 		            response.setStatus( HttpServletResponse.SC_BAD_REQUEST );
-		            System.out.println( "CustomerProfileAction.addCustomerProfile - Suspicious activity detected" );
+		            System.out.println( "CustomerProfileAction.addCustomerProfile - Suspicious activity detected in Honey Pot" );
 		            isFraudulentRequest = true;
 		        }
 
@@ -111,7 +111,7 @@ public class CustomerProfileAction extends Action
 		        if (userAgent == null || userAgent.isEmpty() || StockManUtilities.isKnownBadBot(userAgent) ) 
 		        {
 		            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-		            System.out.println( "CustomerProfileAction.addCustomerProfile - robot detected" );
+		            System.out.println( "CustomerProfileAction.addCustomerProfile - User Agent robot detected" );
 		            isFraudulentRequest = true;
 		        }
 				
@@ -222,7 +222,7 @@ public class CustomerProfileAction extends Action
 				}
 		        else  // Request is fraudulent
  		        {
-		        	System.out.println( "CustomerProfileAction: kill session." );
+		        	System.out.println( "CustomerProfileAction: kill session due to fraudulent request." );
 		    	    HttpSession session = request.getSession( false );
 		    	    // Invalidate the current session
 		    	    if ( session != null ) 
