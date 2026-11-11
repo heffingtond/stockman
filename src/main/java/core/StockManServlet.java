@@ -3,6 +3,7 @@ package core;
 import java.io.IOException;
 
 import actions.Action;
+import actions.CustomerProfileAction;
 import actions.FilterAction;
 import actions.LoginAction;
 import actions.LogoutAction;
@@ -26,35 +27,25 @@ public class StockManServlet extends HttpServlet
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
 	{
-		boolean timeout = false;
-		try
-		{
-			timeout = StockManUtilities.isTimeout( request, response );
-		}
-		catch( Exception e )
-		{
-			e.printStackTrace();
-		}
+		Action action = null;
+		if ( StockManUtilities.replaceSpecialCharacters( request.getParameter( "LoginAction" ) ) != null )
+			action = new LoginAction();
+		else
+		if ( StockManUtilities.replaceSpecialCharacters( request.getParameter( "LogoutAction" ) ) != null )
+			action = new LogoutAction();
+		else
+		if ( StockManUtilities.replaceSpecialCharacters( request.getParameter( "FilterAction" ) ) != null )
+			action = new FilterAction();
+		else
+		if ( StockManUtilities.replaceSpecialCharacters( request.getParameter( "ProfileAction" ) ) != null )
+			action = new ProfileAction();
+		else
+		if ( StockManUtilities.replaceSpecialCharacters( request.getParameter( "CustomerProfileAction" ) ) != null )
+			action = new CustomerProfileAction();
 		
-		if ( ! timeout )
-		{
-			Action action = null;
-			if ( StockManUtilities.replaceSpecialCharacters( request.getParameter( "LoginAction" ) ) != null )
-				action = new LoginAction();
-			else
-			if ( StockManUtilities.replaceSpecialCharacters( request.getParameter( "LogoutAction" ) ) != null )
-				action = new LogoutAction();
-			else
-			if ( StockManUtilities.replaceSpecialCharacters( request.getParameter( "FilterAction" ) ) != null )
-				action = new FilterAction();
-			else
-			if ( StockManUtilities.replaceSpecialCharacters( request.getParameter( "ProfileAction" ) ) != null )
-				action = new ProfileAction();
-			
-			if ( action != null )
-				action.execute( request, response );
-			else
-				System.out.println( "No action found in servlet!" );
-		}
+		if ( action != null )
+			action.execute( request, response );
+		else
+			System.out.println( "No action found in servlet!" );
 	}
 }

@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.sql.Connection;
 import java.text.NumberFormat;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -27,6 +28,7 @@ import beans.EarningsBean;
 import beans.FilterDisplayBean;
 import beans.FinancialScoresBean;
 import beans.MarketOpenBean;
+import beans.OrganizationBean;
 import beans.ProfileBean;
 import beans.QuoteAfterHoursBean;
 import beans.QuoteShortBean;
@@ -1893,5 +1895,312 @@ public class StockManUtilities
 		    System.out.println("Invalid number format: " + numberStr);
 		    return "$0.00";
 		}
+	}
+	
+	public static String getOrganization( String organizationName )
+	{
+		// Return JSON representation of the organization.
+		String returnList = null;
+        try 
+        {
+            // 1. Define the URL of the REST endpoint
+        	Context ctx = new InitialContext();
+        	String domainName = ( String ) ctx.lookup("java:global/restServiceDomain");
+        	String endpointUrl = domainName + "/securityservices/rest/security/getOrganization";
+        	System.out.println( "SecurityUtilities: endpoint: " + endpointUrl );
+            @SuppressWarnings("deprecation")
+			URL url = new URL( endpointUrl );
+
+            // 2. Open a connection
+            HttpURLConnection connection = ( HttpURLConnection ) url.openConnection();
+
+            // 3. Set the request method (e.g., GET, POST, PUT, DELETE)
+            connection.setRequestMethod( "GET" );
+
+            // 4. Set request headers (optional, but often necessary for content type, authorization, etc.)
+            connection.setRequestProperty("Accept", "application/json");
+
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put( "organizationName", organizationName );
+            System.out.println("StoccManUtilities.getOrganization - organization name " + organizationName);
+            
+            connection.setRequestProperty( "input", jsonObject.toJSONString() );
+            
+            // 5. Get the response code
+            int responseCode = connection.getResponseCode();
+            System.out.println("Response Code: " + responseCode);
+
+            // 6. Read the response
+            if ( responseCode == HttpURLConnection.HTTP_OK ) 
+            {
+                BufferedReader in = new BufferedReader( new InputStreamReader( connection.getInputStream() ) );
+                String inputLine;
+                StringBuilder content = new StringBuilder();
+                while ( ( inputLine = in.readLine() ) != null ) 
+                {
+                    content.append( inputLine );
+                }
+                in.close();
+                returnList = content.toString();
+//                System.out.println( "Response Body: " + content.toString() );
+            } 
+            else 
+            {
+                System.out.println( "Error in GET request: " + responseCode );
+            }
+
+            // 7. Disconnect the connection
+            connection.disconnect();
+
+        } 
+        catch (IOException e) 
+        {
+            e.printStackTrace();
+        }
+        catch (NamingException e) 
+        {
+            e.printStackTrace();
+        }
+		return returnList;
+	}
+	
+	public static String addNewCustomer( AuthenticationProfileBean newCustomerProfile )
+	{
+		// Return JSON result.
+		String returnJsonResult = null;
+        try 
+        {
+            // 1. Define the URL of the REST endpoint
+        	Context ctx = new InitialContext();
+        	String domainName = ( String ) ctx.lookup("java:global/restServiceDomain");
+        	String endpointUrl = domainName + "/securityservices/rest/security/newCustomerProfile";
+        	System.out.println( "SecurityUtilities: endpoint: " + endpointUrl );
+            @SuppressWarnings("deprecation")
+			URL url = new URL( endpointUrl );
+
+            // 2. Open a connection
+            HttpURLConnection connection = ( HttpURLConnection ) url.openConnection();
+
+            // 3. Set the request method (e.g., GET, POST, PUT, DELETE)
+            connection.setRequestMethod( "POST" );
+
+            // 4. Set request headers (optional, but often necessary for content type, authorization, etc.)
+            connection.setRequestProperty("Accept", "application/json");
+
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put( "authenticationProfileId", newCustomerProfile.getAuthenticationProfileId() );
+            jsonObject.put( "organizationId", newCustomerProfile.getOrganizationId() );
+            jsonObject.put( "userId", newCustomerProfile.getUserId() );
+            jsonObject.put( "textPassword", newCustomerProfile.getTextPassword() );
+            jsonObject.put( "password", newCustomerProfile.getPassword() );
+            jsonObject.put( "salt", newCustomerProfile.getSalt() );
+            jsonObject.put( "firstName", newCustomerProfile.getFirstName() );
+            jsonObject.put( "lastName", newCustomerProfile.getLastName() );
+            jsonObject.put( "email", newCustomerProfile.getEmail() );
+            jsonObject.put( "mobilePhone", newCustomerProfile.getMobilePhone() );
+            jsonObject.put( "officePhone", newCustomerProfile.getOfficePhone() );
+            jsonObject.put( "officePhoneExt", newCustomerProfile.getOfficePhoneExt() );
+            jsonObject.put( "homePhone", newCustomerProfile.getHomePhone() );
+            jsonObject.put( "failedLoginAttempts", newCustomerProfile.getFailedLoginAttempts() );
+            jsonObject.put( "verificationCodeMethod", newCustomerProfile.getVerificationCodeMethod() );
+            jsonObject.put( "clientResult", newCustomerProfile.getClientResult() );
+            
+            connection.setRequestProperty( "input", jsonObject.toJSONString() );
+            
+            // 5. Get the response code
+            int responseCode = connection.getResponseCode();
+            System.out.println("Response Code: " + responseCode);
+
+            // 6. Read the response
+            if ( responseCode == HttpURLConnection.HTTP_OK ) 
+            {
+                BufferedReader in = new BufferedReader( new InputStreamReader( connection.getInputStream() ) );
+                String inputLine;
+                StringBuilder content = new StringBuilder();
+                while ( ( inputLine = in.readLine() ) != null ) 
+                {
+                    content.append( inputLine );
+                }
+                in.close();
+                returnJsonResult = content.toString();
+//                System.out.println( "Response Body: " + content.toString() );
+            } 
+            else 
+            {
+                System.out.println( "Error in POST request: " + responseCode );
+            }
+
+            // 7. Disconnect the connection
+            connection.disconnect();
+
+        } 
+        catch (IOException e) 
+        {
+            e.printStackTrace();
+        }
+        catch (NamingException e) 
+        {
+            e.printStackTrace();
+        }
+		return returnJsonResult;
+	}
+	
+	public static String addNewCustomerRole( int organizationId, int authenticationProfileId )
+	{
+		// Return JSON result.
+		String returnJsonResult = null;
+        try 
+        {
+            // 1. Define the URL of the REST endpoint
+        	Context ctx = new InitialContext();
+        	String domainName = ( String ) ctx.lookup("java:global/restServiceDomain");
+        	String endpointUrl = domainName + "/securityservices/rest/security/newCustomerRole";
+        	System.out.println( "SecurityUtilities: endpoint: " + endpointUrl );
+            @SuppressWarnings("deprecation")
+			URL url = new URL( endpointUrl );
+
+            // 2. Open a connection
+            HttpURLConnection connection = ( HttpURLConnection ) url.openConnection();
+
+            // 3. Set the request method (e.g., GET, POST, PUT, DELETE)
+            connection.setRequestMethod( "POST" );
+
+            // 4. Set request headers (optional, but often necessary for content type, authorization, etc.)
+            connection.setRequestProperty("Accept", "application/json");
+
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put( "authenticationProfileId", authenticationProfileId );
+            jsonObject.put( "organizationId", organizationId );
+            jsonObject.put( "applicationCode", Constants.APPLICATION_CODE );
+            jsonObject.put( "departmentCode", "STOCKMAN_USER" );
+            jsonObject.put( "roleName", "HFM_STOCK_RESEARCH" );
+            connection.setRequestProperty( "input", jsonObject.toJSONString() );
+            
+            // 5. Get the response code
+            int responseCode = connection.getResponseCode();
+            System.out.println("Response Code: " + responseCode);
+
+            // 6. Read the response
+            if ( responseCode == HttpURLConnection.HTTP_OK ) 
+            {
+                BufferedReader in = new BufferedReader( new InputStreamReader( connection.getInputStream() ) );
+                String inputLine;
+                StringBuilder content = new StringBuilder();
+                while ( ( inputLine = in.readLine() ) != null ) 
+                {
+                    content.append( inputLine );
+                }
+                in.close();
+                returnJsonResult = content.toString();
+//                System.out.println( "Response Body: " + content.toString() );
+            } 
+            else 
+            {
+                System.out.println( "Error in POST request: " + responseCode );
+            }
+
+            // 7. Disconnect the connection
+            connection.disconnect();
+
+        } 
+        catch (IOException e) 
+        {
+            e.printStackTrace();
+        }
+        catch (NamingException e) 
+        {
+            e.printStackTrace();
+        }
+		return returnJsonResult;
+	}
+	
+	public static OrganizationBean loadOrganizationBean( String organizationJson )
+	{
+		OrganizationBean organization = null;
+		
+		try
+		{
+			JSONParser parser = new JSONParser();
+			JSONArray jsonArray = ( JSONArray ) parser.parse( organizationJson );
+			for ( Object obj : jsonArray ) 
+			{
+				organization = new OrganizationBean();
+				
+				JSONObject jsonObject = ( JSONObject ) obj; // Each element is a JSONObject
+
+				long organizationId = ( long ) jsonObject.get("organizationId");
+				organization.setOrganizationId( ( int ) organizationId );
+				organization.setOrganizationName( ( String ) jsonObject.get( "organizationName" ) );
+				organization.setOrganizationAddress( ( String ) jsonObject.get( "organizationAddress" ) );
+				organization.setOrganizationCity( ( String ) jsonObject.get( "organizationCity" ) );
+				organization.setOrganizationState( ( String ) jsonObject.get( "organizationState" ) );
+				organization.setOrganizationZip( ( String ) jsonObject.get( "organizationZip" ) );
+				organization.setOrganizationZipExt( ( String ) jsonObject.get( "organizationZipExt" ) );
+				organization.setPrimaryUrl( ( String ) jsonObject.get( "primaryUrl" ) );
+				organization.setOrganizationDescription( ( String ) jsonObject.get( "organizationDescription" ) );
+			}
+		}
+		catch( Exception e )
+		{
+			e.printStackTrace();
+		}
+		
+		return organization;
+	}
+
+	public static void validateAuthenticationProfile( AuthenticationProfileBean user, ArrayList<String> errors )
+	{
+		if ( user.getOrganizationId() == 0 )
+			errors.add( "Please select the organization this user belongs to." );
+
+		if ( StockManUtilities.isEmpty( user.getFirstName() ) )
+			errors.add( "The First Name name is required." );
+		if ( StockManUtilities.isEmpty( user.getLastName() ) )
+			errors.add( "The Last Name name is required." );
+
+		if ( ! StockManUtilities.isValidEmail( user.getEmail() ) )
+			errors.add( "Invalid email address.  Valid email is required." );
+
+		if ( StockManUtilities.isEmpty( user.getMobilePhone() ) )
+			errors.add( "Mobile Phone is required." );
+		else
+		if ( user.getMobilePhone().length() < 10 || user.getMobilePhone().length() > 12 )
+			errors.add( "Mobile Phone must be 10 to 12 characters in length." );
+		
+		boolean needPasswordValidation = true;
+		if ( user.getAuthenticationProfileId() > 0 ) // If this is from the edit function
+			if ( StockManUtilities.isEmpty( user.getTextPassword() ) ) // Password should be left alone
+				needPasswordValidation = false;
+		if ( needPasswordValidation )
+		{
+			if ( StockManUtilities.isEmpty( user.getTextPassword() ) )
+				errors.add( "Password required." );
+			else
+			if ( ! containsNumber( user.getTextPassword() ) )
+				errors.add( "password must contain at least one number." );
+			if ( user.getTextPassword().length() < 8 || user.getTextPassword().length() > 50 )
+				errors.add( "Password must be 8 to 50 characters in length." );
+			if ( user.getTextPassword().contains( " " ) )
+				errors.add( "Password cannot contain whitespace." );
+		}
+		
+		if ( StockManUtilities.isEmpty( user.getUserId() ) )
+			errors.add( "User ID is required." );
+		else
+		if ( user.getUserId().length() < 8 || user.getUserId().length() > 50 )
+			errors.add( "User ID must be 8 to 50 characters in length." );
+		
+//		if ( StockManUtilities.isEmpty( user.getVerificationCodeMethod() ) || "SELECT".equals( user.getVerificationCodeMethod() ) )
+//			errors.add( "Please select a method for verification code delivery." );
+	}
+	
+	public static boolean isKnownBadBot( String userAgent ) 
+	{
+		String lowerUA = userAgent.toLowerCase();
+		// Add basic patterns of known bad scrapers/tools
+		return lowerUA.contains("libwww-perl") || 
+	           lowerUA.contains("scrapy") || 
+	           lowerUA.contains("httpclient") ||
+	           lowerUA.contains("python-requests");
 	}
 }

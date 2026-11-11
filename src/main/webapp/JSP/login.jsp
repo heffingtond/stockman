@@ -34,7 +34,10 @@
 		     			</c:forEach>
 	   					${sessionScope.UserBean.clearErrors}
 			       	</c:if>
-			    </div>   	
+			    </div>  
+				<p>
+	            ${requestScope.userMessage}<br>
+	            </p>
 		        <form action="/stockman/StockManServlet" method="post">
 		            <label for="username">Username:</label>
 		            <input type="text" id="username" name="username"><br><br>
