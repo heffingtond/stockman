@@ -560,10 +560,17 @@ public class StockManUtilities
         return text;
     }
     
-	public static String getCurrentTimestamp()
+    // For default time zone, pass in null for timezone parameter.
+	public static String getCurrentTimestamp( String timezone )
 	{
+		// New York : "America/New_York"
 		Instant instant = Instant.now();
-		ZoneId desiredZone = ZoneId.systemDefault();
+		ZoneId desiredZone = null;
+		if ( timezone == null )
+			desiredZone = ZoneId.systemDefault();
+		else
+			desiredZone = ZoneId.of( timezone );
+		
 		ZonedDateTime zonedDateTime = instant.atZone(desiredZone);
 		
         System.out.println("ZonedDateTime in " + desiredZone + ": " + zonedDateTime);
@@ -1612,7 +1619,7 @@ public class StockManUtilities
 			System.out.println( "New York Time " + currentNewYorkTime + ": Loading after hours data." );
 		}
 		
-		String currentTimestamp = getCurrentTimestamp();
+		String currentTimestamp = getCurrentTimestamp( "America/New_York" );
 		
 		ArrayList<QuoteShortBean> tickerShortData = new ArrayList<QuoteShortBean>();
 		ArrayList<QuoteAfterHoursBean> tickerAfterHoursData = new ArrayList<QuoteAfterHoursBean>();
