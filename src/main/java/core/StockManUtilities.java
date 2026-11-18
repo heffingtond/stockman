@@ -13,10 +13,14 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import java.io.UnsupportedEncodingException;
+import java.util.Date;
+
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -34,10 +38,18 @@ import beans.QuoteAfterHoursBean;
 import beans.QuoteShortBean;
 import beans.RatingsSnapshotBean;
 import beans.TargetBean;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
+import jakarta.activation.DataHandler;
+import jakarta.activation.DataSource;
+import jakarta.activation.FileDataSource;
+import jakarta.mail.BodyPart;
+import jakarta.mail.Message;
+import jakarta.mail.Multipart;
+import jakarta.mail.Session;
+import jakarta.mail.Transport;
 import jakarta.mail.internet.AddressException;
 
 public class StockManUtilities
@@ -2210,5 +2222,117 @@ public class StockManUtilities
 	           lowerUA.contains("scrapy") || 
 	           lowerUA.contains("httpclient") ||
 	           lowerUA.contains("python-requests");
+	}
+
+	/**
+	 * Call REST service to send the email.  Since the session configuration is a jndi entry, 
+	 * this call will work with any valid smtp host.
+	 * @param sessionJndi - jndi entry to support the desired smtp host.
+	 * @param from
+	 * @param to
+	 * @param subject
+	 * @param text
+	 * @return
+	 * @throws Exception
+	 */
+	public static String sendEmail( String sessionJndi,
+            					    String from,
+            					    String to,
+            					    String subject,
+            					    String text ) throws Exception
+	{
+		// Return JSON result.
+		String returnJsonResult = null;
+        try 
+        {
+            // 1. Define the URL of the REST endpoint
+        	Context ctx = new InitialContext();
+        	String domainName = ( String ) ctx.lookup("java:global/restServiceDomain");
+        	String endpointUrl = domainName + "/securityservices/rest/security/sendEmail";
+        	System.out.println( "SecurityUtilities: endpoint: " + endpointUrl );
+            @SuppressWarnings("deprecation")
+			URL url = new URL( endpointUrl );
+
+            // 2. Open a connection
+            HttpURLConnection connection = ( HttpURLConnection ) url.openConnection();
+
+            // 3. Set the request method (e.g., GET, POST, PUT, DELETE)
+            connection.setRequestMethod( "POST" );
+
+            // 4. Set request headers (optional, but often necessary for content type, authorization, etc.)
+            connection.setRequestProperty("Accept", "application/json");
+
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put( "sessionJndi", sessionJndi );
+            jsonObject.put( "from", from );
+            jsonObject.put( "to", to );
+            jsonObject.put( "subject", subject );
+            jsonObject.put( "text", text );
+            connection.setRequestProperty( "input", jsonObject.toJSONString() );
+            
+            // 5. Get the response code
+            int responseCode = connection.getResponseCode();
+            System.out.println("Response Code: " + responseCode);
+
+            // 6. Read the response
+            if ( responseCode == HttpURLConnection.HTTP_OK ) 
+            {
+                BufferedReader in = new BufferedReader( new InputStreamReader( connection.getInputStream() ) );
+                String inputLine;
+                StringBuilder content = new StringBuilder();
+                while ( ( inputLine = in.readLine() ) != null ) 
+                {
+                    content.append( inputLine );
+                }
+                in.close();
+                returnJsonResult = content.toString();
+//	                System.out.println( "Response Body: " + content.toString() );
+            } 
+            else 
+            {
+                System.out.println( "Error in POST request: " + responseCode );
+            }
+
+            // 7. Disconnect the connection
+            connection.disconnect();
+
+        } 
+        catch (IOException e) 
+        {
+            e.printStackTrace();
+        }
+        catch (NamingException e) 
+        {
+            e.printStackTrace();
+        }
+		return returnJsonResult;
+	}
+
+	public static void watchtowerusaEmail()
+	{
+	    try
+	    {
+//	            message.addHeader("Content-type", "text/HTML; charset=UTF-8");
+//		    	message.addHeader("format", "flowed");
+//		    	message.addHeader("Content-Transfer-Encoding", "8bit");
+	    	
+            InitialContext initCtx = new InitialContext();
+            Session mailSession = (Session) initCtx.lookup("java:jboss/mail/Default");
+            
+            Message message = new MimeMessage(mailSession);
+
+		    message.setFrom(new InternetAddress( "support@watchtowerusa.net" ));
+		    message.setRecipients(Message.RecipientType.TO, InternetAddress.parse("david_heffington@yahoo.com"));
+		    message.setSubject("Welcome");
+		    message.setText("Your account is ready.");
+
+		    System.out.println("Sending.");
+		    Transport.send(message);
+		    System.out.println("Email sent successfully.");
+	    }
+	    catch( Exception e )
+	    {
+	    	e.printStackTrace();
+	    }
 	}
 }

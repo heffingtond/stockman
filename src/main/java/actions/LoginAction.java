@@ -155,6 +155,24 @@ public class LoginAction extends Action
 				request.setAttribute( "userMessage", "New code sent successfully." );
 			destinationPage = "/JSP/otpVerification.jsp";
 		}
+		else
+		if ( "Reset Password".equalsIgnoreCase( buttonPressed ) )
+		{
+			String sessionJndi = "java:jboss/mail/Default";
+			String from = "support@watchtowerusa.net";
+			String to = "david_heffington@yahoo.com";
+			String subject = "Call to new service";
+			String text = "This is a test from StockMan login action via new service.";
+			try
+			{
+				String result = StockManUtilities.sendEmail( sessionJndi, from, to, subject, text );
+				System.out.println( "json respons is " + result );
+			}
+			catch( Exception e )
+			{
+				e.printStackTrace();
+			}
+		}
 
 		this.view( request, response, destinationPage );
 	}
