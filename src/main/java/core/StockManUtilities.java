@@ -195,7 +195,10 @@ public class StockManUtilities
             jsonObject.put( "password", password );
             
             connection.setRequestProperty( "input", jsonObject.toJSONString() );
-            
+	   	    ctx = new InitialContext();
+	   	    String restKey = ( String ) ctx.lookup("java:global/restKey");
+            connection.setRequestProperty( "authorization", restKey );
+           
             // 5. Get the response code
             int responseCode = connection.getResponseCode();
             System.out.println("Response Code: " + responseCode);
@@ -276,6 +279,9 @@ public class StockManUtilities
             jsonObject.put( "email", email );
 
             connection.setRequestProperty( "input", jsonObject.toJSONString() );
+	   	    ctx = new InitialContext();
+	   	    String restKey = ( String ) ctx.lookup("java:global/restKey");
+            connection.setRequestProperty( "authorization", restKey );
             
             // 5. Get the response code
             int responseCode = connection.getResponseCode();
@@ -345,6 +351,9 @@ public class StockManUtilities
             jsonObject.put( "applicationCode", applicationCode );
             
             connection.setRequestProperty( "input", jsonObject.toJSONString() );
+	   	    ctx = new InitialContext();
+	   	    String restKey = ( String ) ctx.lookup("java:global/restKey");
+            connection.setRequestProperty( "authorization", restKey );
             
             // 5. Get the response code
             int responseCode = connection.getResponseCode();
@@ -412,6 +421,9 @@ public class StockManUtilities
             jsonObject.put( "verificationCode", verificationCode );
             
             connection.setRequestProperty( "input", jsonObject.toJSONString() );
+	   	    ctx = new InitialContext();
+	   	    String restKey = ( String ) ctx.lookup("java:global/restKey");
+            connection.setRequestProperty( "authorization", restKey );
             
             // 5. Get the response code
             int responseCode = connection.getResponseCode();
@@ -1945,6 +1957,9 @@ public class StockManUtilities
             System.out.println("StoccManUtilities.getOrganization - organization name " + organizationName);
             
             connection.setRequestProperty( "input", jsonObject.toJSONString() );
+	   	    ctx = new InitialContext();
+	   	    String restKey = ( String ) ctx.lookup("java:global/restKey");
+            connection.setRequestProperty( "authorization", restKey );
             
             // 5. Get the response code
             int responseCode = connection.getResponseCode();
@@ -2026,6 +2041,9 @@ public class StockManUtilities
             jsonObject.put( "clientResult", newCustomerProfile.getClientResult() );
             
             connection.setRequestProperty( "input", jsonObject.toJSONString() );
+	   	    ctx = new InitialContext();
+	   	    String restKey = ( String ) ctx.lookup("java:global/restKey");
+            connection.setRequestProperty( "authorization", restKey );
             
             // 5. Get the response code
             int responseCode = connection.getResponseCode();
@@ -2095,6 +2113,9 @@ public class StockManUtilities
             jsonObject.put( "departmentCode", "STOCKMAN_USER" );
             jsonObject.put( "roleName", "HFM_STOCK_RESEARCH" );
             connection.setRequestProperty( "input", jsonObject.toJSONString() );
+	   	    ctx = new InitialContext();
+	   	    String restKey = ( String ) ctx.lookup("java:global/restKey");
+            connection.setRequestProperty( "authorization", restKey );
             
             // 5. Get the response code
             int responseCode = connection.getResponseCode();
@@ -2269,6 +2290,10 @@ public class StockManUtilities
             jsonObject.put( "subject", subject );
             jsonObject.put( "text", text );
             connection.setRequestProperty( "input", jsonObject.toJSONString() );
+
+	   	    ctx = new InitialContext();
+	   	    String restKey = ( String ) ctx.lookup("java:global/restKey");
+            connection.setRequestProperty( "authorization", restKey );
             
             // 5. Get the response code
             int responseCode = connection.getResponseCode();
