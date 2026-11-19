@@ -44,7 +44,9 @@
 		            <label for="password">Password:</label>
 		            <input type="password" id="password" name="password"><br><br>
 		            <input type="submit" value="Login" name="LoginAction">
-		            <input type="submit" value="Reset Password" name="LoginAction">
+		            <br />
+		            <br />
+		            <a href="/stockman/StockManServlet?LoginAction=forgotUserId">Forgot Username</a>
 		        </form>
 		    </div>
 	    </div>

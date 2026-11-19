@@ -346,7 +346,6 @@ public class StockManUtilities
             connection.setRequestProperty("Accept", "application/json");
 
             JSONObject jsonObject = new JSONObject();
-            System.out.println( "userId is " + userId );
             jsonObject.put( "userId", userId );
             jsonObject.put( "applicationCode", applicationCode );
             
@@ -515,7 +514,7 @@ public class StockManUtilities
 				profile.setVerificationCodeMethod( ( String ) jsonObject.get( "verificationCodeMethod" ) );
 				long failedLoginAttempts = ( long ) jsonObject.get("failedLoginAttempts");
 				profile.setFailedLoginAttempts( ( int ) failedLoginAttempts );
-				profile.setClientResult( ( String ) jsonObject.get( "clientResult" ) );
+				profile.setClientResult( ( String ) jsonObject.get( "result" ) );
 			}
 		}
 		catch( Exception e )
@@ -2333,31 +2332,83 @@ public class StockManUtilities
 		return returnJsonResult;
 	}
 
-	public static void watchtowerusaEmail()
+	/**
+	 * Call REST service to look up the authentication profile by organization ID + email address. 
+	 * @param sessionJndi - jndi entry to support the desired smtp host.
+	 * @param from
+	 * @param to
+	 * @param subject
+	 * @param text
+	 * @return
+	 * @throws Exception
+	 */
+	public static String retrieveAuthenticationProfile( int organizationId, String email )
 	{
-	    try
-	    {
-//	            message.addHeader("Content-type", "text/HTML; charset=UTF-8");
-//		    	message.addHeader("format", "flowed");
-//		    	message.addHeader("Content-Transfer-Encoding", "8bit");
-	    	
-            InitialContext initCtx = new InitialContext();
-            Session mailSession = (Session) initCtx.lookup("java:jboss/mail/Default");
+		// Return JSON result.
+		String returnJsonResult = null;
+        try 
+        {
+            // 1. Define the URL of the REST endpoint
+        	Context ctx = new InitialContext();
+        	String domainName = ( String ) ctx.lookup("java:global/restServiceDomain");
+        	String endpointUrl = domainName + "/securityservices/rest/security/getProfileForEmail";
+        	System.out.println( "SecurityUtilities: endpoint: " + endpointUrl );
+            @SuppressWarnings("deprecation")
+			URL url = new URL( endpointUrl );
+
+            // 2. Open a connection
+            HttpURLConnection connection = ( HttpURLConnection ) url.openConnection();
+
+            // 3. Set the request method (e.g., GET, POST, PUT, DELETE)
+            connection.setRequestMethod( "GET" );
+
+            // 4. Set request headers (optional, but often necessary for content type, authorization, etc.)
+            connection.setRequestProperty("Accept", "application/json");
+
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put( "organizationId", organizationId );
+            jsonObject.put( "email", email );
+            connection.setRequestProperty( "input", jsonObject.toJSONString() );
+
+	   	    ctx = new InitialContext();
+	   	    String restKey = ( String ) ctx.lookup("java:global/restKey");
+            connection.setRequestProperty( "authorization", restKey );
             
-            Message message = new MimeMessage(mailSession);
+            // 5. Get the response code
+            int responseCode = connection.getResponseCode();
+            System.out.println("Response Code: " + responseCode);
 
-		    message.setFrom(new InternetAddress( "support@watchtowerusa.net" ));
-		    message.setRecipients(Message.RecipientType.TO, InternetAddress.parse("david_heffington@yahoo.com"));
-		    message.setSubject("Welcome");
-		    message.setText("Your account is ready.");
+            // 6. Read the response
+            if ( responseCode == HttpURLConnection.HTTP_OK ) 
+            {
+                BufferedReader in = new BufferedReader( new InputStreamReader( connection.getInputStream() ) );
+                String inputLine;
+                StringBuilder content = new StringBuilder();
+                while ( ( inputLine = in.readLine() ) != null ) 
+                {
+                    content.append( inputLine );
+                }
+                in.close();
+                returnJsonResult = content.toString();
+//	                System.out.println( "Response Body: " + content.toString() );
+            } 
+            else 
+            {
+                System.out.println( "Error in POST request: " + responseCode );
+            }
 
-		    System.out.println("Sending.");
-		    Transport.send(message);
-		    System.out.println("Email sent successfully.");
-	    }
-	    catch( Exception e )
-	    {
-	    	e.printStackTrace();
-	    }
+            // 7. Disconnect the connection
+            connection.disconnect();
+
+        } 
+        catch (IOException e) 
+        {
+            e.printStackTrace();
+        }
+        catch (NamingException e) 
+        {
+            e.printStackTrace();
+        }
+		return returnJsonResult;
 	}
 }

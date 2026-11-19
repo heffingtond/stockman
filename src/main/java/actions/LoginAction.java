@@ -4,6 +4,8 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
+import beans.AuthenticationProfileBean;
+import beans.OrganizationBean;
 import beans.UserBean;
 import core.StockManUtilities;
 import jakarta.servlet.http.HttpServletRequest;
@@ -156,22 +158,55 @@ public class LoginAction extends Action
 			destinationPage = "/JSP/otpVerification.jsp";
 		}
 		else
-		if ( "Reset Password".equalsIgnoreCase( buttonPressed ) )
+		if ( "forgotUserId".equalsIgnoreCase( buttonPressed ) )
 		{
-			String sessionJndi = "java:jboss/mail/Default";
-			String from = "support@watchtowerusa.net";
-			String to = "david_heffington@yahoo.com";
-			String subject = "Call to new service";
-			String text = "This is a test from StockMan login action via new service.";
-			try
+			System.out.println( "FORGOT USERNAME" );
+			request.setAttribute( "RECOVERY_TYPE", "username" );
+			destinationPage = "/JSP/recover.jsp";
+		}
+		else
+		if ( "Send Username".equalsIgnoreCase( buttonPressed ) )
+		{
+			String email = request.getParameter( "email" );
+			// First, look up the organization details.
+			String organizationJson = StockManUtilities.getOrganization( "Stockman Customers" );
+			OrganizationBean organization = StockManUtilities.loadOrganizationBean( organizationJson );
+			// Then look for the authentication profile using the supplied 'email' + 'organizationId'
+			String authenticationProfileJson = StockManUtilities.retrieveAuthenticationProfile( organization.getOrganizationId(), email );
+			AuthenticationProfileBean profile = StockManUtilities.loadAuthenticationProfileBean( authenticationProfileJson );
+			request.removeAttribute( "userMessage" );
+			String usernameRecoveryMessage = "Hello " + profile.getFirstName() + "!\n\n";
+		       	   usernameRecoveryMessage += "Your Stock Man username we have on file is " + profile.getUserId() + ".\n\n";
+				   usernameRecoveryMessage += "Thank you,\n";
+				   usernameRecoveryMessage += "StockMan Support";
+			if ( profile != null && "USER PROFILE FOUND".equals( profile.getClientResult() ) )
 			{
-				String result = StockManUtilities.sendEmail( sessionJndi, from, to, subject, text );
-				System.out.println( "json respons is " + result );
+				// Send email with the username.
+				try
+				{
+					StockManUtilities.sendEmail( "java:jboss/mail/Default", "support@watchtowerusa.net", email, "recovery", usernameRecoveryMessage );
+					request.setAttribute( "userMessage", "Username emailed to you.  If email does not arrive soon, check your spam folder." );
+				}
+				catch( Exception e )
+				{
+					request.setAttribute( "userMessage", "Error sending email." );
+					e.printStackTrace();
+				}
+				
 			}
-			catch( Exception e )
+			else
 			{
-				e.printStackTrace();
+				request.setAttribute( "userMessage", "No profile found for " + email );
 			}
+
+			request.setAttribute( "RECOVERY_TYPE", "response" );
+			
+			destinationPage = "/JSP/recover.jsp";
+		}
+		else
+		if ( "Return to Login".equalsIgnoreCase( buttonPressed ) )
+		{
+			destinationPage = "/JSP/login.jsp";
 		}
 
 		this.view( request, response, destinationPage );
