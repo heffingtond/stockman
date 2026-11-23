@@ -49,6 +49,24 @@
 				    	<br />
 			            <input type="submit" value="Return to Login" name="LoginAction">
 				    </c:if>
+				    <c:if test="${requestScope.RECOVERY_TYPE == 'password'}" >
+				    	<c:out value="If the username entered here exists for StockMan users, an email will be sent with a link to reset your password."/>
+				    	<br />
+				    	<br />
+			            <label for="userId">Enter StockMan Username:</label>
+			            <input type="text" id="userId" name="userId" size="30" maxlength="50"><br><br>
+			            <input type="submit" value="Reset Password" name="LoginAction">
+				    </c:if>
+				    <c:if test="${requestScope.RECOVERY_TYPE == 'newPassword'}" >
+				    	<c:out value="Please enter your new password here."/>
+				    	<br />
+				    	<br />
+				    	<input type="hidden" name="userId" value="${param.userId}" />
+				    	<input type="hidden" name="randomCode" value="${param.randomCode}" />
+			            <label for="textPassword">New Password:</label>
+			            <input type="text" id="textPassword" name="textPassword" size="30" maxlength="50"><br><br>
+			            <input type="submit" value="Submit New Password" name="LoginAction">
+				    </c:if>
 		            <p>
 		            ${requestScope.userMessage}
 		            </p>

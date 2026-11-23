@@ -1,5 +1,10 @@
 package actions;
 
+import java.util.ArrayList;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -56,7 +61,6 @@ public class LoginAction extends Action
 				  || "USER NOT FOUND".equals( user.getLoginAuthenticationProfile().getClientResult() )	)
 				{
 					user.getErrors().add( "Bad username or password" );
-					System.out.println( "Login error: " + user.getLoginAuthenticationProfile().getClientResult() );
 					destinationPage = "/JSP/login.jsp";
 				}
 				else
@@ -172,12 +176,12 @@ public class LoginAction extends Action
 			String organizationJson = StockManUtilities.getOrganization( "Stockman Customers" );
 			OrganizationBean organization = StockManUtilities.loadOrganizationBean( organizationJson );
 			// Then look for the authentication profile using the supplied 'email' + 'organizationId'
-			String authenticationProfileJson = StockManUtilities.retrieveAuthenticationProfile( organization.getOrganizationId(), email );
+			String authenticationProfileJson = StockManUtilities.retrieveAuthenticationProfileForEmail( organization.getOrganizationId(), email );
 			AuthenticationProfileBean profile = StockManUtilities.loadAuthenticationProfileBean( authenticationProfileJson );
 			request.removeAttribute( "userMessage" );
-			String usernameRecoveryMessage = "Hello " + profile.getFirstName() + "!\n\n";
-		       	   usernameRecoveryMessage += "Your Stock Man username we have on file is " + profile.getUserId() + ".\n\n";
-				   usernameRecoveryMessage += "Thank you,\n";
+			String usernameRecoveryMessage = "Hello " + profile.getFirstName() + "!<br><br>";
+		       	   usernameRecoveryMessage += "Your Stock Man username we have on file is " + profile.getUserId() + ".<br><br>";
+				   usernameRecoveryMessage += "Thank you,<br>";
 				   usernameRecoveryMessage += "StockMan Support";
 			if ( profile != null && "USER PROFILE FOUND".equals( profile.getClientResult() ) )
 			{
@@ -207,6 +211,164 @@ public class LoginAction extends Action
 		if ( "Return to Login".equalsIgnoreCase( buttonPressed ) )
 		{
 			destinationPage = "/JSP/login.jsp";
+		}
+		else
+		if ( "forgotPassword".equalsIgnoreCase( buttonPressed ) )
+		{
+			System.out.println( "FORGOT PASSWORD" );
+			request.setAttribute( "RECOVERY_TYPE", "password" );
+			destinationPage = "/JSP/recover.jsp";
+		}
+		else
+		if ( "Reset Password".equalsIgnoreCase( buttonPressed ) )
+		{
+			String userId = request.getParameter( "userId" );
+			// First, look up the organization details.
+			String organizationJson = StockManUtilities.getOrganization( "Stockman Customers" );
+			OrganizationBean organization = StockManUtilities.loadOrganizationBean( organizationJson );
+			// Then look for the authentication profile using the supplied 'userId' + 'organizationId'
+			String authenticationProfileJson = StockManUtilities.retrieveAuthenticationProfileForUserId( organization.getOrganizationId(), userId );
+			AuthenticationProfileBean profile = StockManUtilities.loadAuthenticationProfileBean( authenticationProfileJson );
+			if ( profile.getAuthenticationProfileId() <= 0 )
+			{
+				request.setAttribute( "userMessage", "No profile found for user " + userId );
+				request.setAttribute( "RECOVERY_TYPE", "password" );
+				destinationPage = "/JSP/login.jsp";
+			}
+			else
+			{	
+				// Set verification code to be included in the reset password link in email.
+				String newVerificationCodeResultJson = StockManUtilities.getNewVerificationCode( profile.getAuthenticationProfileId(), 
+	                    																		 "RECOVER",
+	                    																		 profile.getMobilePhone(),
+	                    																		 profile.getEmail() );
+				String newCodeResult = null;
+				String randomCode = null;
+				JSONParser parser = new JSONParser();
+				try
+				{
+					JSONArray jsonArray = ( JSONArray ) parser.parse( newVerificationCodeResultJson );
+					for ( Object obj : jsonArray ) 
+					{
+						JSONObject jsonObject = ( JSONObject ) obj; // Each element is a JSONObject
+						newCodeResult = ( String ) jsonObject.get( "newCodeResult" );
+						randomCode = ( String ) jsonObject.get( "randomCode" );
+					}
+				}
+				catch( Exception e )
+				{
+					e.printStackTrace();
+				}
+	
+				if ( "WAIT FOR 2 FACTOR AUTHENTICATION".equals( newCodeResult ) )
+				{
+					request.removeAttribute( "userMessage" );
+					String domainName = null;
+					Context ctx = null;
+					try
+					{
+						ctx = new InitialContext();
+			        	domainName = ( String ) ctx.lookup("java:global/restServiceDomain");
+					}	
+					catch( Exception e )
+					{
+						e.printStackTrace();
+					}
+					
+					String passworResetMessage = "Hello " + profile.getFirstName() + "!<br><br>";
+						   passworResetMessage += "Please use the one-time link below to reset your password for " + profile.getUserId() + ".<br><br>";
+						   passworResetMessage += "<a href=" + domainName + "/stockman/StockManServlet?LoginAction=newPassword&userId=" + userId + "&randomCode="+ randomCode + ">Reset Password</a><br><br>";
+						   passworResetMessage += "Thank you,<br>";
+						   passworResetMessage += "StockMan Support";
+					if ( profile != null && "USER PROFILE FOUND".equals( profile.getClientResult() ) )
+					{
+						// Send email with the username.
+						try
+						{
+							StockManUtilities.sendEmail( "java:jboss/mail/Default", "support@watchtowerusa.net", profile.getEmail(), "recovery", passworResetMessage );
+							request.setAttribute( "userMessage", "Password reset link emailed.  If email does not arrive soon, check your spam folder." );
+						}
+						catch( Exception e )
+						{
+							request.setAttribute( "userMessage", "Error sending email." );
+							e.printStackTrace();
+						}
+						
+					}
+					else
+					{
+						request.setAttribute( "userMessage", "No profile found for " + userId );
+					}
+				}
+	
+				request.setAttribute( "RECOVERY_TYPE", "response" );
+				destinationPage = "/JSP/recover.jsp";
+			}
+		}
+		else
+		if ( "newPassword".equalsIgnoreCase( buttonPressed ) )
+		{
+			System.out.println( "TYPE NEW PASSWORD" );
+			String userId = request.getParameter( "userId" );
+			String randomCode = request.getParameter( "randomCode" );
+			request.setAttribute( "RECOVERY_TYPE", "newPassword" );
+			destinationPage = "/JSP/recover.jsp";
+		}
+		else
+		if ( "Submit New Password".equalsIgnoreCase( buttonPressed ) )
+		{
+			System.out.println( "NEW PASSWORD SUBMIT" );
+			request.setAttribute( "RECOVERY_TYPE", "response" );
+			String textPassword = request.getParameter( "textPassword" );
+			String userId = request.getParameter( "userId" );
+			String randomCode = request.getParameter( "randomCode" );
+			ArrayList<String> errors = new ArrayList<String>();
+			StockManUtilities.validatePassword( textPassword, errors );
+			if ( errors.size() == 0 )
+			{
+				String organizationJson = StockManUtilities.getOrganization( "Stockman Customers" );
+				OrganizationBean organization = StockManUtilities.loadOrganizationBean( organizationJson );
+				// Then look for the authentication profile using the supplied 'userId' + 'organizationId'
+				String authenticationProfileJson = StockManUtilities.retrieveAuthenticationProfileForUserId( organization.getOrganizationId(), userId );
+				AuthenticationProfileBean profile = StockManUtilities.loadAuthenticationProfileBean( authenticationProfileJson );
+				// Now validate the random code.
+				String resultJson = StockManUtilities.validateCode( profile.getAuthenticationProfileId(), randomCode );
+				// Check the result of the code validation.
+				String codeValidationResult = null;
+				JSONParser parser = new JSONParser();
+				try
+				{
+					JSONArray jsonArray = ( JSONArray ) parser.parse( resultJson );
+					for ( Object obj : jsonArray ) 
+					{
+						JSONObject jsonObject = ( JSONObject ) obj; // Each element is a JSONObject
+						codeValidationResult = ( String ) jsonObject.get( "validationResult" );
+					}
+				}
+				catch( Exception e )
+				{
+					e.printStackTrace();
+				}
+				
+				if ( "VALIDATION SUCCESSFUL".equals( codeValidationResult ) )
+				{
+					// set the new password here.
+					StockManUtilities.setPassword( profile.getAuthenticationProfileId(), textPassword );
+					request.setAttribute( "userMessage", "Password has been reset." );
+				}
+				else
+				{
+					errors.add( "Random Code Validation Failed: " +  codeValidationResult );
+					request.setAttribute( "userMessage", "This link has been used already or has expired.  Password reset failed." );
+
+				}
+			}
+			else
+			{
+				request.setAttribute( "userMessage", errors.get( 0 ) );
+			}
+			
+			destinationPage = "/JSP/recover.jsp";
 		}
 
 		this.view( request, response, destinationPage );

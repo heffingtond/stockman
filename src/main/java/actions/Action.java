@@ -18,7 +18,6 @@ public abstract class Action
 		{
 			try
 			{
-				System.out.println( "ACTION: redirect to " + request.getContextPath() + "/JSP/login.jsp" );
 				response.sendRedirect( request.getContextPath() + "/JSP/login.jsp" );
 			}
 			catch( Exception e )

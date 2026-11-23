@@ -47,6 +47,8 @@
 		            <br />
 		            <br />
 		            <a href="/stockman/StockManServlet?LoginAction=forgotUserId">Forgot Username</a>
+		            &nbsp;
+		            <a href="/stockman/StockManServlet?LoginAction=forgotPassword">Forgot Password</a>
 		        </form>
 		    </div>
 	    </div>

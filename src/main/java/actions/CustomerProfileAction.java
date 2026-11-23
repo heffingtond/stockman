@@ -60,7 +60,6 @@ public class CustomerProfileAction extends Action
 				HttpSession session = request.getSession( false );
 				if ( session == null ) // start over
 				{
-					System.out.println( "Session was dead.  Getting a new one." );
 					session = request.getSession();
 				}
 		//		session.setMaxInactiveInterval( 30 ); // 30 seconds (used when testing) 

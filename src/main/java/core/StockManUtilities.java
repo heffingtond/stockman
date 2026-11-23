@@ -5,7 +5,7 @@ import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.sql.Connection;
+import java.security.SecureRandom;
 import java.text.NumberFormat;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -13,13 +13,10 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import java.io.UnsupportedEncodingException;
-import java.util.Date;
 
 
 import org.json.simple.JSONArray;
@@ -39,46 +36,10 @@ import beans.QuoteShortBean;
 import beans.RatingsSnapshotBean;
 import beans.TargetBean;
 import jakarta.mail.internet.InternetAddress;
-import jakarta.mail.internet.MimeBodyPart;
-import jakarta.mail.internet.MimeMessage;
-import jakarta.mail.internet.MimeMultipart;
-import jakarta.activation.DataHandler;
-import jakarta.activation.DataSource;
-import jakarta.activation.FileDataSource;
-import jakarta.mail.BodyPart;
-import jakarta.mail.Message;
-import jakarta.mail.Multipart;
-import jakarta.mail.Session;
-import jakarta.mail.Transport;
 import jakarta.mail.internet.AddressException;
 
 public class StockManUtilities
 {
-/**
-	public static boolean isTimeout( HttpServletRequest request,
-			 						 HttpServletResponse response ) throws Exception
-	{
-		System.out.println( "CHECKING FOR TIMEOUT NEW" );
-		HttpSession session = request.getSession( false );
-		boolean isTimeout = false;
-		if( session == null )
-		{
-			System.out.println( "IS TIMEOUT" );
-			isTimeout = true;
-		    // Redirect to the login page or home page
-		    try
-		    {
-				System.out.println( "redirecting" );
-		    	response.sendRedirect("/stockman"); // redirect to login page.
-		    }
-		    catch( Exception e )
-		    {
-		    	e.printStackTrace();
-		    }
-		}
-		return isTimeout;
-	}
-**/	
 	public static String replaceSpecialCharacters( String inString )
 	{
 		final String SINGLE_QUOTE = "&#39;";
@@ -177,7 +138,6 @@ public class StockManUtilities
         	String domainName = ( String ) ctx.lookup("java:global/restServiceDomain");
         	
         	String endpointUrl = domainName + "/securityservices/rest/security/authentication";
-        	System.out.println( "SecurityUtilities: endpoint: " + endpointUrl );
             @SuppressWarnings("deprecation")
 			URL url = new URL( endpointUrl );
 
@@ -201,7 +161,6 @@ public class StockManUtilities
            
             // 5. Get the response code
             int responseCode = connection.getResponseCode();
-            System.out.println("Response Code: " + responseCode);
 
             // 6. Read the response
             if ( responseCode == HttpURLConnection.HTTP_OK ) 
@@ -252,7 +211,6 @@ public class StockManUtilities
         	String domainName = ( String ) ctx.lookup("java:global/restServiceDomain");
         	
         	String endpointUrl = domainName + "/securityservices/rest/security/requestNewCode";
-        	System.out.println( "SecurityUtilities: endpoint: " + endpointUrl );
             @SuppressWarnings("deprecation")
 			URL url = new URL( endpointUrl );
 
@@ -285,7 +243,6 @@ public class StockManUtilities
             
             // 5. Get the response code
             int responseCode = connection.getResponseCode();
-            System.out.println("Response Code: " + responseCode);
 
             // 6. Read the response
             if ( responseCode == HttpURLConnection.HTTP_OK ) 
@@ -332,7 +289,6 @@ public class StockManUtilities
         	String domainName = ( String ) ctx.lookup("java:global/restServiceDomain");
 
         	String endpointUrl = domainName + "/securityservices/rest/security/roles";
-        	System.out.println( "endpoint: " + endpointUrl );
             @SuppressWarnings("deprecation")
 			URL url = new URL( endpointUrl );
 
@@ -356,7 +312,6 @@ public class StockManUtilities
             
             // 5. Get the response code
             int responseCode = connection.getResponseCode();
-            System.out.println("Response Code: " + responseCode);
 
             // 6. Read the response
             if ( responseCode == HttpURLConnection.HTTP_OK ) 
@@ -402,7 +357,6 @@ public class StockManUtilities
         	Context ctx = new InitialContext();
         	String domainName = ( String ) ctx.lookup("java:global/restServiceDomain");
         	String endpointUrl = domainName + "/securityservices/rest/security/validate";
-        	System.out.println( "endpoint: " + endpointUrl );
             @SuppressWarnings("deprecation")
 			URL url = new URL( endpointUrl );
 
@@ -426,7 +380,6 @@ public class StockManUtilities
             
             // 5. Get the response code
             int responseCode = connection.getResponseCode();
-            System.out.println("Response Code: " + responseCode);
 
             // 6. Read the response
             if ( responseCode == HttpURLConnection.HTTP_OK ) 
@@ -514,7 +467,7 @@ public class StockManUtilities
 				profile.setVerificationCodeMethod( ( String ) jsonObject.get( "verificationCodeMethod" ) );
 				long failedLoginAttempts = ( long ) jsonObject.get("failedLoginAttempts");
 				profile.setFailedLoginAttempts( ( int ) failedLoginAttempts );
-				profile.setClientResult( ( String ) jsonObject.get( "result" ) );
+				profile.setClientResult( ( String ) jsonObject.get( "clientResult" ) );
 			}
 		}
 		catch( Exception e )
@@ -652,7 +605,6 @@ public class StockManUtilities
         {
             // 1. Define the URL of the REST endpoint
         	String endpointUrl = "https://financialmodelingprep.com/stable/exchange-market-hours";
-        	System.out.println( "endpoint: " + endpointUrl );
         	endpointUrl += "?apikey=" + System.getenv("FMP_API_KEY");
         	endpointUrl += "&exchange=" + exchange;
         	
@@ -670,7 +622,6 @@ public class StockManUtilities
 
             // 5. Get the response code
             int responseCode = connection.getResponseCode();
-            System.out.println("Response Code: " + responseCode);
 
             // 6. Read the response
             if ( responseCode == HttpURLConnection.HTTP_OK ) 
@@ -710,7 +661,6 @@ public class StockManUtilities
         {
             // 1. Define the URL of the REST endpoint
         	String endpointUrl = "https://financialmodelingprep.com/stable/aftermarket-trade";
-        	System.out.println( "endpoint: " + endpointUrl );
         	endpointUrl += "?apikey=" + System.getenv("FMP_API_KEY");
         	endpointUrl += "&symbol=" + ticker;
             @SuppressWarnings("deprecation")
@@ -727,7 +677,6 @@ public class StockManUtilities
 
             // 5. Get the response code
             int responseCode = connection.getResponseCode();
-            System.out.println("Response Code: " + responseCode);
 
             // 6. Read the response
             if ( responseCode == HttpURLConnection.HTTP_OK ) 
@@ -767,7 +716,6 @@ public class StockManUtilities
         {
             // 1. Define the URL of the REST endpoint
         	String endpointUrl = "https://financialmodelingprep.com/stable/quote-short";
-        	System.out.println( "endpoint: " + endpointUrl );
         	endpointUrl += "?apikey=" + System.getenv("FMP_API_KEY");
         	endpointUrl += "&symbol=" + ticker;
             @SuppressWarnings("deprecation")
@@ -784,7 +732,6 @@ public class StockManUtilities
 
             // 5. Get the response code
             int responseCode = connection.getResponseCode();
-            System.out.println("Response Code: " + responseCode);
 
             // 6. Read the response
             if ( responseCode == HttpURLConnection.HTTP_OK ) 
@@ -825,7 +772,6 @@ public class StockManUtilities
         {
             // 1. Define the URL of the REST endpoint
         	String endpointUrl = "https://financialmodelingprep.com/stable/price-target-consensus";
-        	System.out.println( "endpoint: " + endpointUrl );
         	endpointUrl += "?apikey=" + System.getenv("FMP_API_KEY");
         	endpointUrl += "&symbol=" + ticker;
             @SuppressWarnings("deprecation")
@@ -842,7 +788,6 @@ public class StockManUtilities
 
             // 5. Get the response code
             int responseCode = connection.getResponseCode();
-            System.out.println("Response Code: " + responseCode);
 
             // 6. Read the response
             if ( responseCode == HttpURLConnection.HTTP_OK ) 
@@ -882,7 +827,6 @@ public class StockManUtilities
         {
             // 1. Define the URL of the REST endpoint
         	String endpointUrl = "https://financialmodelingprep.com/stable/financial-scores";
-        	System.out.println( "endpoint: " + endpointUrl );
         	endpointUrl += "?apikey=" + System.getenv("FMP_API_KEY");
         	endpointUrl += "&symbol=" + ticker;
             @SuppressWarnings("deprecation")
@@ -899,7 +843,6 @@ public class StockManUtilities
 
             // 5. Get the response code
             int responseCode = connection.getResponseCode();
-            System.out.println("Response Code: " + responseCode);
 
             // 6. Read the response
             if ( responseCode == HttpURLConnection.HTTP_OK ) 
@@ -1079,7 +1022,6 @@ public class StockManUtilities
         {
             // 1. Define the URL of the REST endpoint
         	String endpointUrl = "https://financialmodelingprep.com/stable/earnings";
-        	System.out.println( "endpoint: " + endpointUrl );
         	endpointUrl += "?apikey=" + System.getenv("FMP_API_KEY");
         	endpointUrl += "&symbol=" + ticker;
             @SuppressWarnings("deprecation")
@@ -1096,7 +1038,6 @@ public class StockManUtilities
 
             // 5. Get the response code
             int responseCode = connection.getResponseCode();
-            System.out.println("Response Code: " + responseCode);
 
             // 6. Read the response
             if ( responseCode == HttpURLConnection.HTTP_OK ) 
@@ -1136,7 +1077,6 @@ public class StockManUtilities
         {
             // 1. Define the URL of the REST endpoint
         	String endpointUrl = "https://financialmodelingprep.com/stable/profile";
-        	System.out.println( "endpoint: " + endpointUrl );
         	endpointUrl += "?apikey=" + System.getenv("FMP_API_KEY");
         	endpointUrl += "&symbol=" + ticker;
             @SuppressWarnings("deprecation")
@@ -1153,7 +1093,6 @@ public class StockManUtilities
 
             // 5. Get the response code
             int responseCode = connection.getResponseCode();
-            System.out.println("Response Code: " + responseCode);
 
             // 6. Read the response
             if ( responseCode == HttpURLConnection.HTTP_OK ) 
@@ -1444,7 +1383,6 @@ public class StockManUtilities
         {
             // 1. Define the URL of the REST endpoint
         	String endpointUrl = "https://financialmodelingprep.com/stable/ratings-snapshot";
-        	System.out.println( "endpoint: " + endpointUrl );
         	endpointUrl += "?apikey=" + System.getenv("FMP_API_KEY");
         	endpointUrl += "&symbol=" + ticker;
             @SuppressWarnings("deprecation")
@@ -1461,7 +1399,6 @@ public class StockManUtilities
 
             // 5. Get the response code
             int responseCode = connection.getResponseCode();
-            System.out.println("Response Code: " + responseCode);
 
             // 6. Read the response
             if ( responseCode == HttpURLConnection.HTTP_OK ) 
@@ -1938,7 +1875,6 @@ public class StockManUtilities
         	Context ctx = new InitialContext();
         	String domainName = ( String ) ctx.lookup("java:global/restServiceDomain");
         	String endpointUrl = domainName + "/securityservices/rest/security/getOrganization";
-        	System.out.println( "SecurityUtilities: endpoint: " + endpointUrl );
             @SuppressWarnings("deprecation")
 			URL url = new URL( endpointUrl );
 
@@ -1962,7 +1898,6 @@ public class StockManUtilities
             
             // 5. Get the response code
             int responseCode = connection.getResponseCode();
-            System.out.println("Response Code: " + responseCode);
 
             // 6. Read the response
             if ( responseCode == HttpURLConnection.HTTP_OK ) 
@@ -2008,7 +1943,6 @@ public class StockManUtilities
         	Context ctx = new InitialContext();
         	String domainName = ( String ) ctx.lookup("java:global/restServiceDomain");
         	String endpointUrl = domainName + "/securityservices/rest/security/newCustomerProfile";
-        	System.out.println( "SecurityUtilities: endpoint: " + endpointUrl );
             @SuppressWarnings("deprecation")
 			URL url = new URL( endpointUrl );
 
@@ -2046,7 +1980,6 @@ public class StockManUtilities
             
             // 5. Get the response code
             int responseCode = connection.getResponseCode();
-            System.out.println("Response Code: " + responseCode);
 
             // 6. Read the response
             if ( responseCode == HttpURLConnection.HTTP_OK ) 
@@ -2092,7 +2025,6 @@ public class StockManUtilities
         	Context ctx = new InitialContext();
         	String domainName = ( String ) ctx.lookup("java:global/restServiceDomain");
         	String endpointUrl = domainName + "/securityservices/rest/security/newCustomerRole";
-        	System.out.println( "SecurityUtilities: endpoint: " + endpointUrl );
             @SuppressWarnings("deprecation")
 			URL url = new URL( endpointUrl );
 
@@ -2118,7 +2050,6 @@ public class StockManUtilities
             
             // 5. Get the response code
             int responseCode = connection.getResponseCode();
-            System.out.println("Response Code: " + responseCode);
 
             // 6. Read the response
             if ( responseCode == HttpURLConnection.HTTP_OK ) 
@@ -2186,6 +2117,19 @@ public class StockManUtilities
 		}
 		
 		return organization;
+	}
+	
+	public static void validatePassword( String textPassword, ArrayList<String> errors )
+	{
+		if ( StockManUtilities.isEmpty( textPassword ) )
+			errors.add( "Password required." );
+		else
+		if ( ! containsNumber( textPassword ) )
+			errors.add( "password must contain at least one number." );
+		if ( textPassword.length() < 8 || textPassword.length() > 50 )
+			errors.add( "Password must be 8 to 50 characters in length." );
+		if ( textPassword.contains( " " ) )
+			errors.add( "Password cannot contain whitespace." );
 	}
 
 	public static void validateAuthenticationProfile( AuthenticationProfileBean user, ArrayList<String> errors )
@@ -2269,7 +2213,6 @@ public class StockManUtilities
         	Context ctx = new InitialContext();
         	String domainName = ( String ) ctx.lookup("java:global/restServiceDomain");
         	String endpointUrl = domainName + "/securityservices/rest/security/sendEmail";
-        	System.out.println( "SecurityUtilities: endpoint: " + endpointUrl );
             @SuppressWarnings("deprecation")
 			URL url = new URL( endpointUrl );
 
@@ -2296,7 +2239,6 @@ public class StockManUtilities
             
             // 5. Get the response code
             int responseCode = connection.getResponseCode();
-            System.out.println("Response Code: " + responseCode);
 
             // 6. Read the response
             if ( responseCode == HttpURLConnection.HTTP_OK ) 
@@ -2342,7 +2284,7 @@ public class StockManUtilities
 	 * @return
 	 * @throws Exception
 	 */
-	public static String retrieveAuthenticationProfile( int organizationId, String email )
+	public static String retrieveAuthenticationProfileForEmail( int organizationId, String email )
 	{
 		// Return JSON result.
 		String returnJsonResult = null;
@@ -2352,7 +2294,6 @@ public class StockManUtilities
         	Context ctx = new InitialContext();
         	String domainName = ( String ) ctx.lookup("java:global/restServiceDomain");
         	String endpointUrl = domainName + "/securityservices/rest/security/getProfileForEmail";
-        	System.out.println( "SecurityUtilities: endpoint: " + endpointUrl );
             @SuppressWarnings("deprecation")
 			URL url = new URL( endpointUrl );
 
@@ -2376,7 +2317,6 @@ public class StockManUtilities
             
             // 5. Get the response code
             int responseCode = connection.getResponseCode();
-            System.out.println("Response Code: " + responseCode);
 
             // 6. Read the response
             if ( responseCode == HttpURLConnection.HTTP_OK ) 
@@ -2410,5 +2350,165 @@ public class StockManUtilities
             e.printStackTrace();
         }
 		return returnJsonResult;
+	}
+	
+
+	/**
+	 * Call REST service to look up the authentication profile by organization ID + email address. 
+	 * @param sessionJndi - jndi entry to support the desired smtp host.
+	 * @param from
+	 * @param to
+	 * @param subject
+	 * @param text
+	 * @return
+	 * @throws Exception
+	 */
+	public static String retrieveAuthenticationProfileForUserId( int organizationId, String userId )
+	{
+		// Return JSON result.
+		String returnJsonResult = null;
+        try 
+        {
+            // 1. Define the URL of the REST endpoint
+        	Context ctx = new InitialContext();
+        	String domainName = ( String ) ctx.lookup("java:global/restServiceDomain");
+        	String endpointUrl = domainName + "/securityservices/rest/security/getProfileForUserId";
+            @SuppressWarnings("deprecation")
+			URL url = new URL( endpointUrl );
+
+            // 2. Open a connection
+            HttpURLConnection connection = ( HttpURLConnection ) url.openConnection();
+
+            // 3. Set the request method (e.g., GET, POST, PUT, DELETE)
+            connection.setRequestMethod( "GET" );
+
+            // 4. Set request headers (optional, but often necessary for content type, authorization, etc.)
+            connection.setRequestProperty("Accept", "application/json");
+
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put( "organizationId", organizationId );
+            jsonObject.put( "userId", userId );
+            connection.setRequestProperty( "input", jsonObject.toJSONString() );
+
+	   	    ctx = new InitialContext();
+	   	    String restKey = ( String ) ctx.lookup("java:global/restKey");
+            connection.setRequestProperty( "authorization", restKey );
+            
+            // 5. Get the response code
+            int responseCode = connection.getResponseCode();
+
+            // 6. Read the response
+            if ( responseCode == HttpURLConnection.HTTP_OK ) 
+            {
+                BufferedReader in = new BufferedReader( new InputStreamReader( connection.getInputStream() ) );
+                String inputLine;
+                StringBuilder content = new StringBuilder();
+                while ( ( inputLine = in.readLine() ) != null ) 
+                {
+                    content.append( inputLine );
+                }
+                in.close();
+                returnJsonResult = content.toString();
+//	                System.out.println( "Response Body: " + content.toString() );
+            } 
+            else 
+            {
+                System.out.println( "Error in POST request: " + responseCode );
+            }
+
+            // 7. Disconnect the connection
+            connection.disconnect();
+
+        } 
+        catch (IOException e) 
+        {
+            e.printStackTrace();
+        }
+        catch (NamingException e) 
+        {
+            e.printStackTrace();
+        }
+		return returnJsonResult;
+	}
+	
+	public static String setPassword( int authenticationProfileId, String textPassword )
+	{
+		// Return JSON representation of the ticker profile.
+		String returnList = null;
+        try 
+        {
+            // 1. Define the URL of the REST endpoint
+        	Context ctx = new InitialContext();
+        	String domainName = ( String ) ctx.lookup("java:global/restServiceDomain");
+        	
+        	String endpointUrl = domainName + "/securityservices/rest/security/setPassword";
+            @SuppressWarnings("deprecation")
+			URL url = new URL( endpointUrl );
+
+            // 2. Open a connection
+            HttpURLConnection connection = ( HttpURLConnection ) url.openConnection();
+
+            // 3. Set the request method (e.g., GET, POST, PUT, DELETE)
+            connection.setRequestMethod( "PUT" );
+
+            // 4. Set request headers (optional, but often necessary for content type, authorization, etc.)
+            connection.setRequestProperty("Accept", "application/json");
+
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put( "authenticationProfileId", authenticationProfileId );
+            jsonObject.put( "textPassword", textPassword );
+            
+            connection.setRequestProperty( "input", jsonObject.toJSONString() );
+	   	    ctx = new InitialContext();
+	   	    String restKey = ( String ) ctx.lookup("java:global/restKey");
+            connection.setRequestProperty( "authorization", restKey );
+           
+            // 5. Get the response code
+            int responseCode = connection.getResponseCode();
+
+            // 6. Read the response
+            if ( responseCode == HttpURLConnection.HTTP_OK ) 
+            {
+                BufferedReader in = new BufferedReader( new InputStreamReader( connection.getInputStream() ) );
+                String inputLine;
+                StringBuilder content = new StringBuilder();
+                while ( ( inputLine = in.readLine() ) != null ) 
+                {
+                    content.append( inputLine );
+                }
+                in.close();
+                returnList = content.toString();
+//                System.out.println( "Response Body: " + content.toString() );
+            } 
+            else 
+            {
+                System.out.println( "Error in GET request: " + responseCode );
+            }
+
+            // 7. Disconnect the connection
+            connection.disconnect();
+
+        } 
+        catch (IOException e) 
+        {
+            e.printStackTrace();
+        }
+        catch (NamingException e) 
+        {
+            e.printStackTrace();
+        }
+		return returnList;
+	}
+
+	public static synchronized String generateAuthenticationCode()
+	{
+		SecureRandom random = new SecureRandom();
+        // Generate a number between 0 and 999999
+        int number = random.nextInt( 1000000 ); 
+        
+        // Format to ensure 6 digits with leading zeros if necessary
+        String code = String.format("%06d", number);
+        
+        return code;
 	}
 }
