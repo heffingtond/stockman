@@ -417,6 +417,7 @@ public class StockManUtilities
 	
 	public static void loadUserRoles( UserBean user )
 	{
+		System.out.println("*********LOOK UP USER ROLES.**********");
 		String userRolesJson = StockManUtilities.getRoles( user.getUserName(), Constants.APPLICATION_CODE );
 		StockManUtilities.loadAuthenticationProfileBeanWithRoles( user.getLoginAuthenticationProfile(), userRolesJson );
 		

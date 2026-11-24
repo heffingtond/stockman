@@ -54,6 +54,50 @@ public class LoginAction extends Action
 				if ( "WAIT FOR 2 FACTOR AUTHENTICATION".equals( user.getLoginAuthenticationProfile().getClientResult() ) )
 				{
 					System.out.println( "Wait for 2FA" );
+					
+					String randomCode = null;
+					// Get the randomCode that was generated from loginResultJson
+					JSONParser parser = new JSONParser();
+					try
+					{
+						JSONArray jsonArray = ( JSONArray ) parser.parse( loginResultJson );
+						for ( Object obj : jsonArray ) 
+						{
+							JSONObject jsonObject = ( JSONObject ) obj; // Each element is a JSONObject
+							randomCode = ( String ) jsonObject.get( "randomCode" );
+						}
+					}
+					catch( Exception e )
+					{
+						e.printStackTrace();
+					}
+
+					if ( "EMAIL".equals( user.getLoginAuthenticationProfile().getVerificationCodeMethod() ) )
+					{
+						request.removeAttribute( "userMessage" );
+						String otpMessage = "Hello " + user.getLoginAuthenticationProfile().getFirstName() + "!<br><br>";
+							   otpMessage += "When prompted, please enter this one-time code to complete your secure login.<br><br>";
+							   otpMessage += "Your Code: "+ randomCode + "<br><br>";
+							   otpMessage += "Thank you,<br>";
+							   otpMessage += "StockMan Support";
+						// Send email with the random code.
+						try
+						{
+							StockManUtilities.sendEmail( "java:jboss/mail/Default", "support@watchtowerusa.net", user.getLoginAuthenticationProfile().getEmail(), "Watchtowerusa Security", otpMessage );
+							request.setAttribute( "userMessage", "Please check you email to complete login.  If email does not arrive soon, check your spam folder." );
+						}
+						catch( Exception e )
+						{
+							request.setAttribute( "userMessage", "Error sending email." );
+							e.printStackTrace();
+						}
+					}
+					else
+					if ( "TEXT".equals( user.getLoginAuthenticationProfile().getVerificationCodeMethod() ) )
+					{
+						// TEXT NOT WORKING PENDING LOCATION OF SUITABLE VENDOR.
+						request.setAttribute( "userMessage", "NOTE: This user set up with 'TEXT' verification method.  Only 'EMAIL' method is working until a suitable text vendor is located." );
+					}
 					destinationPage = "/JSP/otpVerification.jsp";
 				}
 				else
