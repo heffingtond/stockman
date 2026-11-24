@@ -174,6 +174,7 @@ public class LoginAction extends Action
 			String mobilePhone =  user.getLoginAuthenticationProfile().getMobilePhone();
 			String email =  user.getLoginAuthenticationProfile().getEmail();
 			String newCodeResult = "NEW CODE FAILED";
+			String randomCode = null;
 			int authenticationProfileId = user.getLoginAuthenticationProfile().getAuthenticationProfileId();
 			if ( verificationCodeMethod != null )
 			{
@@ -190,6 +191,7 @@ public class LoginAction extends Action
 					{
 						JSONObject jsonObject = ( JSONObject ) obj; // Each element is a JSONObject
 						newCodeResult = ( String ) jsonObject.get( "newCodeResult" );
+						randomCode = ( String ) jsonObject.get( "randomCode" );
 					}
 				}
 				catch( Exception e )
@@ -202,7 +204,37 @@ public class LoginAction extends Action
 			if ( ! "WAIT FOR 2 FACTOR AUTHENTICATION".equals( newCodeResult ) )
 				user.getErrors().add( "New code request failed: " + newCodeResult + ".  If problem persists, contact administrator." );
 			else
+			{
+				System.out.println( "Wait for REGENERATED 2FA" );
+
+				if ( "EMAIL".equals( user.getLoginAuthenticationProfile().getVerificationCodeMethod() ) )
+				{
+					request.removeAttribute( "userMessage" );
+					String otpMessage = "Hello " + user.getLoginAuthenticationProfile().getFirstName() + "!<br><br>";
+						   otpMessage += "When prompted, please enter this one-time code to complete your secure login.<br><br>";
+						   otpMessage += "Your Regenerated Code: "+ randomCode + "<br><br>";
+						   otpMessage += "Thank you,<br>";
+						   otpMessage += "StockMan Support";
+					// Send email with the random code.
+					try
+					{
+						StockManUtilities.sendEmail( "java:jboss/mail/Default", "support@watchtowerusa.net", user.getLoginAuthenticationProfile().getEmail(), "Watchtowerusa Security", otpMessage );
+						request.setAttribute( "userMessage", "Please check your email to complete login.  If email does not arrive soon, check your spam folder." );
+					}
+					catch( Exception e )
+					{
+						request.setAttribute( "userMessage", "Error sending email." );
+						e.printStackTrace();
+					}
+				}
+				else
+				if ( "TEXT".equals( user.getLoginAuthenticationProfile().getVerificationCodeMethod() ) )
+				{
+					// TEXT NOT WORKING PENDING LOCATION OF SUITABLE VENDOR.
+					request.setAttribute( "userMessage", "NOTE: This user set up with 'TEXT' verification method.  Only 'EMAIL' method is working until a suitable text vendor is located." );
+				}
 				request.setAttribute( "userMessage", "New code sent successfully." );
+			}
 			destinationPage = "/JSP/otpVerification.jsp";
 		}
 		else
