@@ -66,6 +66,14 @@
 				</tr>
 				<tr>
 					<th>
+					    Daily Delta:
+					</th>
+					<td>
+						${requestScope.PROFILE.changePercentage}%
+					</td>
+				</tr>
+				<tr>
+					<th>
 					    Range:
 					</th>
 					<td>

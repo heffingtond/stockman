@@ -1323,7 +1323,8 @@ public class StockManUtilities
 					else
 					{
 						double numberDouble = ( double ) jsonObject.get( "changePercentage" );
-						profile.setChangePercentage( Double.toString( numberDouble ) );
+						long rounded = Math.round( numberDouble );
+						profile.setChangePercentage( Double.toString( rounded ) );
 					}
 				}
 				numberObj = jsonObject.get("averageVolume");
